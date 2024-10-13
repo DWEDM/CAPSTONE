@@ -28,4 +28,9 @@ class User extends Model
     {
         return $this->delete($user_id, 'user_id');
     }
+    public function getUserByUsername($username)
+    {
+        // Assuming 'first' method can be used to find a single record
+        return $this->first(['username' => $username]);
+    }   
 }

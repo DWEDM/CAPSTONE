@@ -43,7 +43,7 @@ if (!isset($_SESSION['username'])) {
                 <button id="editProfileBtn" class="btn btn-primary" data-toggle="modal" data-target="#editProfileModal">Edit Profile</button>
 
                 <!-- Button to open the Change Password modal -->
-                <button id="changePasswordBtn" class="btn btn-warning mt-3" data-toggle="modal" data-target="#changePasswordModal">Change Password</button>
+                <button id="changePasswordBtn" class="btn btn-warning" data-toggle="modal" data-target="#changePasswordModal">Change Password</button>
             </div>
         </div>
     </div>

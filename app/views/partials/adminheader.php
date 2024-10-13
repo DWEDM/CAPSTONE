@@ -1,12 +1,3 @@
-<?php
-if (isset($_GET['logout'])) {
-    session_unset();
-    session_destroy();
-    header("Location: " . SERVER . "/login");
-    exit();
-}
-?>
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -67,7 +58,7 @@ if (isset($_GET['logout'])) {
         <form class="d-flex">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item float-right">
-              <a href="<?= SERVER ?>/login?logout=true" class="nav-link">Log Out</a>
+              <a href="<?= SERVER ?>/logout" class="nav-link">Log Out</a>
             </li>
           </ul>
         </form>

@@ -70,6 +70,7 @@ if (!isset($_SESSION['username'])) {
       <th>Email</th>
       <th>Role</th>
       <th>Date Created</th>
+      <th>Status</th>
       <th>Actions</th>
     </tr>
     <?php if (empty($users)) { ?>
@@ -86,6 +87,13 @@ if (!isset($_SESSION['username'])) {
           <td><?= $row->email ?></td>
           <td><?= $row->role ?></td>
           <td><?= $row->date_created ?></td>
+          <td>
+            <?php if ($row->is_online == 1): ?>
+              <span class="text-success">Online</span>
+            <?php else: ?>
+              <span class="text-danger">Offline</span>
+            <?php endif; ?>
+          </td>
           <td>
             <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#editUserModal<?= $row->user_id ?>" title="Edit">
               <i class="bi bi-pencil-square"></i> <!-- Bootstrap edit icon -->

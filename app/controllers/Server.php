@@ -27,38 +27,22 @@ class Server extends Controller
         $text_username = $_POST['username'];
         $text_password = $_POST['password'];
 
-        // Database connection
-        $servername = "localhost";
-        $username = "root";
-        $password = "";
-        $dbname = "catwiki_db";
-
-        $conn = new mysqli($servername, $username, $password, $dbname);
-
-        // Check connection
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
-
-        // Use prepared statement to prevent SQL injection
-        $query = "SELECT * FROM users WHERE username = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("s", $text_username);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        // Use the User model to find the user by username
+        $userModel = new User();  // Assuming you have a User model extending the Model class
+        $user = $userModel->first(['username' => $text_username]);
 
         // Check if user exists
-        if ($result->num_rows == 1) {
-            $user = $result->fetch_assoc();
-
-            // Verify the password
-            if (password_verify($text_password, $user['password'])) {
+        if ($user) {
+            // Access the password as an object property
+            if (password_verify($text_password, $user->password)) {
                 // Password is correct
                 $_SESSION['username'] = $text_username;
-                $_SESSION['role'] = $user['role']; // Assuming 'role' is the column name in your users table
+                $_SESSION['role'] = $user->role; // Assuming 'role' is the column name in your users table
 
                 // Check the user's role
                 if ($_SESSION['role'] === 'Admin' || $_SESSION['role'] === 'Editor') {
+                    // Set user as online
+                    $userModel->update($user->user_id, ['is_online' => 1], 'user_id'); // Update is_online field to 1
                     $this->view('server/dashboard');
                     exit();
                 } else {
@@ -84,14 +68,11 @@ class Server extends Controller
             $this->view('server/login');
             exit();
         }
-
-        // Close connection
-        $stmt->close();
-        $conn->close();
     }
-
     $this->view('server/login');
-  }
+   }
+
+
   public function dashboard()
   {
     $users = new User();
@@ -690,8 +671,46 @@ class Server extends Controller
         // If the form is not submitted, just load the page
         $this->view('server/updatePassword');
     }
-}
-
-
-
+  }
+  public function logout()
+  {
+      // Ensure the session is started
+      session_start();
+  
+      // Check if the user is logged in
+      if (isset($_SESSION['user_id'])) {
+          $user_id = $_SESSION['user_id'];
+  
+          // Update the user's online status to 0 (offline)
+          $this->model->updateUser($user_id, ['is_online' => 0]);
+  
+          // Unset all session variables
+          session_unset();
+  
+          // Destroy the session
+          session_destroy();
+  
+          // Clear the session cookie if it exists
+          if (ini_get("session.use_cookies")) {
+              $params = session_get_cookie_params();
+              setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
+          }
+  
+          // Debugging: Check session after destroying it
+          if (!isset($_SESSION['user_id'])) {
+              echo "Session destroyed successfully.";
+          } else {
+              echo "Session not destroyed.";
+          }
+  
+          // Redirect to the login page
+          header("Location: " . SERVER . "/login");
+          exit(); // Make sure to exit after the header
+      } else {
+          // If no user is logged in, just redirect to the login page
+          header("Location: " . SERVER . "/login");
+          exit();
+      }
+  }
+      
 }
