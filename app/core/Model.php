@@ -105,13 +105,20 @@ class Model extends Database
 
   public function delete($id, $column = 'id')
   {
-    $data[$column] = $id;
-    $query = "delete from $this->table where $column = :$column";
-
-    $this->query($query, $data);
-
-    return false;
+      $data[$column] = $id;
+      $query = "DELETE FROM $this->table WHERE $column = :$column";
+  
+      // Execute the query and check if it affected any rows
+      $stmt = $this->query($query, $data);
+  
+      // Return true if the query was successful (affected rows > 0)
+      if ($stmt && $stmt->rowCount() > 0) {
+          return true;
+      }
+  
+      return false;
   }
+  
   public function findUserByUsername()
   {
       // Check if session exists

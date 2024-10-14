@@ -75,6 +75,18 @@ class Server extends Controller
 
   public function dashboard()
   {
+    if (session_status() == PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    if (!isset($_SESSION['username'])) {
+        $this->view('server/login');  // Redirect to login if not logged in
+        exit();
+    }
+    
+    // Get the logged-in user's data
+    $user = $this->model->findUserByUsername();
+
     $users = new User();
     $data = $users->findAllUsers();
     $articles = new Article();
@@ -87,7 +99,8 @@ class Server extends Controller
     $this->view('server/dashboard', [
       'users' => $data,
       'totalUsers' => $totalUsers,
-      'totalArticles' => $totalArticles
+      'totalArticles' => $totalArticles,
+      'profile' => $user->profile
     ]); 
   }
   public function users()
@@ -674,40 +687,31 @@ class Server extends Controller
   }
   public function logout()
   {
-      // Ensure the session is started
       session_start();
   
-      // Check if the user is logged in
       if (isset($_SESSION['user_id'])) {
           $user_id = $_SESSION['user_id'];
   
-          // Update the user's online status to 0 (offline)
           $this->model->updateUser($user_id, ['is_online' => 0]);
-  
-          // Unset all session variables
+
           session_unset();
-  
-          // Destroy the session
+ 
           session_destroy();
   
-          // Clear the session cookie if it exists
           if (ini_get("session.use_cookies")) {
               $params = session_get_cookie_params();
               setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
           }
   
-          // Debugging: Check session after destroying it
           if (!isset($_SESSION['user_id'])) {
               echo "Session destroyed successfully.";
           } else {
               echo "Session not destroyed.";
           }
   
-          // Redirect to the login page
           header("Location: " . SERVER . "/login");
-          exit(); // Make sure to exit after the header
+          exit();
       } else {
-          // If no user is logged in, just redirect to the login page
           header("Location: " . SERVER . "/login");
           exit();
       }

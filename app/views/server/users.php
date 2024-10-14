@@ -9,48 +9,9 @@ if (!isset($_SESSION['username'])) {
 
 <?php include "../app/views/partials/adminheader.php" ?>
 <style>
-  .notification {
-    position: fixed;
-    top: 20px;
-    right: -300px; /* Initially hidden on the right side */
-    width: 250px;
-    padding: 15px;
-    background-color: #28a745; /* Success color */
-    color: white;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    z-index: 1000;
-    transition: right 0.5s ease-in-out;
-  }
-
-  .notification.error {
-      background-color: #dc3545; /* Error color */
-  }
-  .table {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .table th, .table td {
-      text-align: center;
-      vertical-align: middle;
-      padding: 15px;
-  }
-
-  .table tr:hover {
-      background-color: rgba(0, 123, 255, 0.1); /* Highlight on hover */
-  }
-
-  .table img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-  }
-
-
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <body style="background-color:gray;">
 
@@ -98,8 +59,8 @@ if (!isset($_SESSION['username'])) {
             <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#editUserModal<?= $row->user_id ?>" title="Edit">
               <i class="bi bi-pencil-square"></i> <!-- Bootstrap edit icon -->
             </button>
-            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteUserModal<?= $row->user_id ?>" title="Delete">
-              <i class="bi bi-trash"></i> <!-- Bootstrap trash icon -->
+            <button class="btn btn-danger btn-sm" onclick="confirmDelete('<?= $row->user_id ?>')" title="Delete">
+              <i class="bi bi-trash"></i>
             </button>
           </td>
         </tr>
@@ -114,7 +75,7 @@ if (!isset($_SESSION['username'])) {
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
-              <form action="<?= SERVER ?>/edit/<?= $row->user_id ?>" method="POST" enctype="multipart/form-data">
+              <form id="editUserForm<?= $row->user_id ?>" action="<?= SERVER ?>/edit/<?= $row->user_id ?>" method="POST" enctype="multipart/form-data" onsubmit="event.preventDefault(); editUser(<?= $row->user_id ?>);">
                 <div class="modal-body">
                   <div class="mb-2 text-center">
                     <img id="editImagePreview<?= $row->user_id ?>" src="<?= !empty($row->profile) ? $row->profile : '../assets/images/default_profile/default.png' ?>" alt="Profile Image" style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid #000;">
@@ -209,7 +170,7 @@ if (!isset($_SESSION['username'])) {
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form action="<?= SERVER ?>/create" method="POST" enctype="multipart/form-data">
+      <form id="createUserForm" action="<?= SERVER ?>/create" method="POST" enctype="multipart/form-data" onsubmit="event.preventDefault(); createUser();">
         <div class="modal-body">
           <div class="mb-2 text-center">
             <img id="imagePreview" src="../assets/images/default_profile/default.png" alt="Profile Preview" style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid #000;">
@@ -221,7 +182,6 @@ if (!isset($_SESSION['username'])) {
           <div class="mb-2">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" class="form-control" required>
-            <small id="usernameFeedback" class="text-danger" style="display: none;"></small>
           </div>
           <div class="mb-2">
             <label for="email">Email</label>
@@ -242,7 +202,6 @@ if (!isset($_SESSION['username'])) {
               <option value="Admin">Admin</option>
               <option value="Editor">Editor</option>
               <option value="User">User</option>
-              <option value="User">Cat</option>
             </select>
           </div>
           <div class="mb-2">
@@ -258,6 +217,7 @@ if (!isset($_SESSION['username'])) {
     </div>
   </div>
 </div>
+
 </body>
 <script>
   function previewImage(event) {
@@ -347,25 +307,189 @@ document.getElementById('username').addEventListener('input', function() {
         });
 });
 function showNotification(message, type = 'success') {
-    const notification = document.getElementById('notification');
-    const notificationMessage = document.getElementById('notificationMessage');
+    Swal.fire({
+        icon: type === 'error' ? 'error' : 'success',
+        title: type === 'error' ? 'Error!' : 'Success!',
+        text: message,
+        timer: 3000,
+        showConfirmButton: false,
+        timerProgressBar: true
+    });
+}
 
-    notificationMessage.innerText = message;
+//Created User Successfuly Sweet Alert
+function createUser() {
+    const form = document.getElementById('createUserForm');
+    
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to create this user?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, create it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Perform the form submission asynchronously
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Created!',
+                        text: 'User has been created successfully.',
+                        showConfirmButton: true
+                    }).then(() => {
+                        // Reload the page after "OK" is clicked
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. Please try again.',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error creating user:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong. Please try again.',
+                });
+            });
+        }
+    });
+}
 
-    // Set success or error based on the type
-    if (type === 'error') {
-        notification.classList.add('error');
-    } else {
-        notification.classList.remove('error');
-    }
 
-    // Show notification (slide in)
-    notification.style.right = '20px';
 
-    // Hide notification after 3 seconds
-    setTimeout(() => {
-        notification.style.right = '-300px';
-    }, 3000);
+//Edit User Successfully Sweet Alert
+function editUser(user_id) {
+    const form = document.getElementById(`editUserForm${user_id}`);
+    
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you really want to update this user?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Perform the form submission asynchronously
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: 'User updated successfully.',
+                        showConfirmButton: true,
+                    }).then(() => {
+                        // Reload the page after "OK" is clicked
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. Please try again.',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error updating user:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong. Please try again.',
+                });
+            });
+        }
+    });
+}
+
+
+
+//Delete User Successfully Sweet Alert
+function confirmDelete(user_id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you really want to delete this user? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Use a form to submit the deletion request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `<?= SERVER ?>/delete/${user_id}`;  // Ensure correct route
+
+            // Optionally add a hidden field if required by your backend
+            const hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.name = 'user_id';
+            hiddenField.value = user_id;
+            form.appendChild(hiddenField);
+
+            // Append the form to the body and submit it
+            document.body.appendChild(form);
+
+            // Make sure the form is submitted asynchronously
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Show success message only after the deletion process
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'User deleted successfully.',
+                        showConfirmButton: true
+                    }).then(() => {
+                        // Refresh the page after user clicks "OK"
+                        location.reload();
+                    });
+                } else {
+                    // Show error if deletion fails
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong! Please try again.',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting user:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong! Please try again.',
+                });
+            });
+
+            // Remove the form from the document body after submission
+            document.body.removeChild(form);
+        }
+    });
 }
 
 </script>

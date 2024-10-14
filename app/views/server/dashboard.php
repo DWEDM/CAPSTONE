@@ -62,12 +62,18 @@ if (!isset($_SESSION['username'])) {
         <div class="row gy-4 gy-md-0">
             <div class="col-md-6 text-center text-md-start d-flex d-sm-flex d-md-flex justify-content-center align-items-center justify-content-md-start align-items-md-center justify-content-xl-center">
                 <div style="max-width: 350px;">
-                    <h2 class="text-uppercase fw-bold">Biben dum<br>fringi dictum, augue purus</h2>
+                    <h2 class="text-uppercase fw-bold">Welcome<br><?= htmlspecialchars($_SESSION['username']) ?></h2>
                     <p class="fw-normal my-3" style="color: rgb(33,37,41);">Tincidunt laoreet leo, adipiscing taciti tempor. Primis senectus sapien, risus donec ad fusce augue interdum.</p><a class="btn btn-primary btn-lg me-2" role="button" href="#">Button</a><a class="btn btn-outline-primary btn-lg" role="button" href="#">Button</a>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="p-xl-5 m-xl-5"><img class="rounded img-fluid w-100 fit-cover" style="min-height: 300px;" src="https://cdn.bootstrapstudio.io/placeholders/1400x800.png"></div>
+                <div class="p-xl-5 m-xl-5">
+                    <?php if (!empty($profile)): ?>
+                        <img src="<?= htmlspecialchars($profile); ?>" alt="Profile Image" class="rounded-circle mb-3" style="width: 150px; height: 150px;">
+                    <?php else: ?>
+                        <img src="../assets/images/default_profile/default.png" alt="Default Profile Image" class="rounded-circle mb-3" style="width: 150px; height: 150px;">
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </div>
