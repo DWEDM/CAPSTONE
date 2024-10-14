@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 13, 2024 at 02:03 PM
+-- Generation Time: Oct 14, 2024 at 10:46 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -133,9 +133,10 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `profile`, `username`, `email`, `password`, `role`, `date_created`, `last_active`, `is_online`) VALUES
-(30, '', 'aj', 'alexwaquiz11@gmail.com', '$2y$10$AgpYW1OvuIW23MWTp.ip2.gx/bcragCce84kPSRz4mWcBA3IBsxye', 'Admin', '2024-10-07', '2024-10-13 10:22:15', 0),
-(32, '', 'denver', 'denver.delamasa@gmail.com', '$2y$10$M39h0D3ISPaxQyCfsDH25.5G5Pt084p49rXUbVOjmxm.ub1i0JFhK', 'Admin', '2024-10-08', '2024-10-13 10:22:15', 0),
-(33, '', 'aj12', 'aj12@gmail.com', '$2y$10$X210XOzqBbJVxsf57./L..o/I7BEmWOXhAiYhNzguBYiw.VjILRRq', 'Admin', '2024-10-08', '2024-10-13 10:22:15', 1);
+(30, '', '123asdasd', 'jm18@gmail.com', '$2y$10$4hSLSMPZAJPylOdWQLvdBei8oGchK3IYc78eiV3VKy8RSCzbGTfRG', 'Admin', '2024-10-07', '2024-10-13 10:22:15', 0),
+(33, '', 'aj12', 'aj12@gmail.com', '$2y$10$X210XOzqBbJVxsf57./L..o/I7BEmWOXhAiYhNzguBYiw.VjILRRq', 'Admin', '2024-10-08', '2024-10-13 10:22:15', 1),
+(58, '', 'asdasdas', 'test@gmail.com', '$2y$10$MCQbTMUPdHj8lkPaWXSjCud94BzBGwDIm5vXCjZkYcB7kfOcjIMdO', 'Admin', '2024-10-14', '2024-10-14 08:31:44', 0),
+(60, '', 'asdasdasd', 'test@gmail.com', '$2y$10$aPIWJQsWn9AOtvkfoQrJROuQKm2aHOK3qR0FJBE0wKuyvgosZ/VJm', 'Editor', '2024-10-14', '2024-10-14 08:42:00', 0);
 
 --
 -- Indexes for dumped tables
@@ -206,7 +207,7 @@ ALTER TABLE `cats`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- Constraints for dumped tables
