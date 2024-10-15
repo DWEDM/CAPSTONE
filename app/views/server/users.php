@@ -125,36 +125,6 @@ if (!isset($_SESSION['username'])) {
             </div>
           </div>
         </div>
-
-        <!-- Modal for Deleting User -->
-        <div class="modal fade" id="deleteUserModal<?= $row->user_id ?>" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
-          <div class="modal-dialog" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="deleteUserModalLabel">Delete User</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <form action="<?= SERVER ?>/delete/<?= $row->user_id ?>" method="POST">
-                <div class="modal-body text-center">
-                  <img src="<?= !empty($row->profile) ? $row->profile : '../assets/images/default_profile/default.png' ?>" alt="Profile Image" style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid #000;">
-                  <p>Are you sure you want to delete this user?</p>
-                  <p><strong>Username:</strong> <?= $row->username ?></p>
-                  <p><strong>Email:</strong> <?= $row->email ?></p>
-                  <p><strong>Role:</strong> <?= $row->role ?></p>
-                  <p><strong>Date Created:</strong> <?= $row->date_created ?></p>
-                  <input type="hidden" name="id" value="<?= $row->user_id ?>">
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                  <button type="submit" class="btn btn-danger">Delete</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-
       <?php } ?>
     <?php } ?>
   </table>

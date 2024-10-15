@@ -9,7 +9,7 @@ if (!isset($_SESSION['username'])) {
 <?php include "../app/views/partials/adminheader.php" ?>
 <!-- Include Font Awesome CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <body style="background-color: gray;">
 
 <div class="container mt-5">
@@ -72,7 +72,7 @@ if (!isset($_SESSION['username'])) {
                             <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#editArticleModal<?= $article->article_id ?>">
                                 <i class="fas fa-edit"></i> <!-- Edit Icon -->
                             </button>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteArticleModal<?= $article->article_id ?>">
+                            <button class="btn btn-danger btn-sm" onclick="confirmDeleteArticle('<?= $article->article_id ?>')" title="Delete Article">
                                 <i class="fas fa-trash-alt"></i> <!-- Delete Icon -->
                             </button>
                         </td>
@@ -88,7 +88,7 @@ if (!isset($_SESSION['username'])) {
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
-                                <form action="<?= SERVER ?>/editArticle/<?= $article->article_id ?>" method="POST" enctype="multipart/form-data">
+                                <form id="editArticleForm<?= $article->article_id ?>" action="<?= SERVER ?>/editArticle/<?= $article->article_id ?>" method="POST" enctype="multipart/form-data" onsubmit="event.preventDefault(); editArticle(<?= $article->article_id ?>);">
                                     <div class="modal-body">
                                         <div class="mb-2">
                                             <label for="">Title</label>
@@ -131,41 +131,6 @@ if (!isset($_SESSION['username'])) {
                             </div>
                         </div>
                     </div>
-
-                    <!-- Delete Article Modal -->
-                    <div class="modal fade" id="deleteArticleModal<?= $article->article_id ?>" tabindex="-1" role="dialog" aria-labelledby="deleteArticleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteArticleModalLabel">Delete Article</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <form action="<?= SERVER ?>/deleteArticle/<?= $article->article_id ?>" method="POST">
-                                    <div class="modal-body text-center">
-                                        <p>Are you sure you want to delete this article?</p>
-                                        <p><strong>Title:</strong> <?= htmlspecialchars($article->article_title) ?></p>
-
-                                        <!-- Display the thumbnail if it exists -->
-                                        <?php if (!empty($article->article_thumbnail)) { ?>
-                                            <p><strong>Thumbnail:</strong></p>
-                                            <img src="<?= htmlspecialchars($article->article_thumbnail) ?>" alt="Thumbnail" style="width: 150px; height: auto; margin-bottom: 10px;">
-                                        <?php } else { ?>
-                                            <p><strong>Thumbnail:</strong> No image available</p>
-                                        <?php } ?>
-
-                                        <input type="hidden" name="id" value="<?= $article->article_id ?>">
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                        <button type="submit" class="btn btn-danger">Delete</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
                 <?php } ?>
             <?php } ?>
         </table>
@@ -191,7 +156,7 @@ if (!isset($_SESSION['username'])) {
                             <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#editCategoryModal<?= $category->category_id ?>">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteCategoryModal<?= $category->category_id ?>">
+                            <button class="btn btn-danger btn-sm" onclick="confirmDeleteCategory('<?= $category->category_id ?>')" title="Delete Category">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </td>
@@ -207,7 +172,7 @@ if (!isset($_SESSION['username'])) {
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
-                                <form action="<?= SERVER ?>/editCategory/<?= $category->category_id ?>" method="POST">
+                                <form id="editCategoryForm<?= $category->category_id ?>" action="<?= SERVER ?>/editCategory/<?= $category->category_id ?>" method="POST" onsubmit="event.preventDefault(); editCategory(<?= $category->category_id ?>);">
                                     <div class="modal-body">
                                         <div class="mb-2">
                                             <label for="">Category Name</label>
@@ -264,7 +229,7 @@ if (!isset($_SESSION['username'])) {
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="<?= SERVER ?>/createArticle" method="POST" enctype="multipart/form-data">
+            <form id="createArticleForm" action="<?= SERVER ?>/createArticle" method="POST" enctype="multipart/form-data" onsubmit="event.preventDefault(); createArticle();">
                 <div class="modal-body">
                     <div class="mb-2">
                         <label for="">Title</label>
@@ -310,7 +275,7 @@ if (!isset($_SESSION['username'])) {
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="<?= SERVER ?>/createCategory" method="POST">
+            <form id="createCategoryForm" action="<?= SERVER ?>/createCategory" method="POST" onsubmit="event.preventDefault(); createCategory();">
                 <div class="modal-body">
                     <div class="mb-2">
                         <label for="">Category Name</label>
@@ -361,6 +326,342 @@ function toggleView() {
         addCategoryBtn.style.display = "none";
         toggleSwitchLabel.textContent = "Show Articles";
     }
+}
+//Create Article Sweet Alert
+function createArticle() {
+    const form = document.getElementById('createArticleForm');
+    
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to create this Article?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, create it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Perform the form submission asynchronously
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Created!',
+                        text: 'Article has been created successfully.',
+                        showConfirmButton: true
+                    }).then(() => {
+                        // Reload the page after "OK" is clicked
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. Please try again.',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error creating user:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong. Please try again.',
+                });
+            });
+        }
+    });
+}
+//Create Category Sweet Alert
+function createCategory() {
+    const form = document.getElementById('createCategoryForm');
+    
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'Do you want to create this Category?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, create it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Perform the form submission asynchronously
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Created!',
+                        text: 'Category has been created successfully.',
+                        showConfirmButton: true
+                    }).then(() => {
+                        // Reload the page after "OK" is clicked
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. Please try again.',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error creating user:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong. Please try again.',
+                });
+            });
+        }
+    });
+}
+//Edit Article Successfully Sweet Alert
+function editArticle(article_id) {
+    const form = document.getElementById(`editArticleForm${article_id}`);
+    
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you really want to update this Article?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Perform the form submission asynchronously
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: 'Article updated successfully.',
+                        showConfirmButton: true,
+                    }).then(() => {
+                        // Reload the page after "OK" is clicked
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. Please try again.',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error updating Article:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong. Please try again.',
+                });
+            });
+        }
+    });
+}
+//Edit Category Successfully Sweet Alert
+function editCategory(category_id) {
+    const form = document.getElementById(`editCategoryForm${category_id}`);
+    
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you really want to update this Category?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, update it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Perform the form submission asynchronously
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: 'Category updated successfully.',
+                        showConfirmButton: true,
+                    }).then(() => {
+                        // Reload the page after "OK" is clicked
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong. Please try again.',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error updating Category:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong. Please try again.',
+                });
+            });
+        }
+    });
+}
+//Delete Article Successfully Sweet Alert
+function confirmDeleteArticle(article_id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you really want to delete this Article? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Use a form to submit the deletion request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `<?= SERVER ?>/deleteArticle/${article_id}`;  // Ensure correct route
+
+            // Optionally add a hidden field if required by your backend
+            const hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.name = 'article_id';
+            hiddenField.value = article_id;
+            form.appendChild(hiddenField);
+
+            // Append the form to the body and submit it
+            document.body.appendChild(form);
+
+            // Make sure the form is submitted asynchronously
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Show success message only after the deletion process
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'User deleted successfully.',
+                        showConfirmButton: true
+                    }).then(() => {
+                        // Refresh the page after user clicks "OK"
+                        location.reload();
+                    });
+                } else {
+                    // Show error if deletion fails
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong! Please try again.',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting article:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong! Please try again.',
+                });
+            });
+
+            // Remove the form from the document body after submission
+            document.body.removeChild(form);
+        }
+    });
+}
+//Delete Category Successfully Sweet Alert
+function confirmDeleteCategory(category_id) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you really want to delete this Category? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Use a form to submit the deletion request
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `<?= SERVER ?>/deleteCategory/${category_id}`;  // Ensure correct route
+
+            // Optionally add a hidden field if required by your backend
+            const hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.name = 'category_id';
+            hiddenField.value = category_id;
+            form.appendChild(hiddenField);
+
+            // Append the form to the body and submit it
+            document.body.appendChild(form);
+
+            // Make sure the form is submitted asynchronously
+            fetch(form.action, {
+                method: form.method,
+                body: new FormData(form)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Show success message only after the deletion process
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Category deleted successfully.',
+                        showConfirmButton: true
+                    }).then(() => {
+                        // Refresh the page after user clicks "OK"
+                        location.reload();
+                    });
+                } else {
+                    // Show error if deletion fails
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong! Please try again.',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting category:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong! Please try again.',
+                });
+            });
+
+            // Remove the form from the document body after submission
+            document.body.removeChild(form);
+        }
+    });
 }
 </script>
 

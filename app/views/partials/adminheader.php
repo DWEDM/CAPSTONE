@@ -49,7 +49,7 @@
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
             <li><a class="dropdown-item" href="<?= SERVER ?>/articles">Articles</a></li>
-            <li><a class="dropdown-item" href="<?= SERVER ?>/cats">Cats</a></li>
+            <li><a class="dropdown-item" href="<?= SERVER ?>/pets">Cats</a></li>
           </ul>
         </li>
         <li class="nav-item">

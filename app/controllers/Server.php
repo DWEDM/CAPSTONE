@@ -215,17 +215,71 @@ class Server extends Controller
         'row' => $data
     ]);
   }
-  public function cats()
+  public function pets()
   {
-    $cats = new Cat();
-    $data = $cats->findAll();
+    $pets = new Pet();
+    $data = $pets->findAllPets();
     $breeds = new Breed();
-    $datab = $breeds->findAll();
+    $datab = $breeds->findAllBreeds();
+    $species = new Species();
+    $datac = $species->findAllSpecies();
 
-    $this->view('server/cats', [
-      'cats' => $data,
-      'breeds' => $datab
+    $this->view('server/pets', [
+      'pets' => $data,
+      'breeds' => $datab,
+      'species' => $datac
     ]);
+  }
+  public function createPet()
+  {
+    $c = new Pet();
+
+    if (count($_POST) > 0) {
+        $uploadedImages = []; // Array to store the paths of uploaded images
+
+        // Handle profile image
+        if ($_FILES['pet_profile_image']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = '../public/assets/images/pet_profile/';
+            $uniqueProfileFilename = uniqid('profile_') . '_' . basename($_FILES['pet_profile_image']['name']);
+            $uploadProfileFile = $uploadDir . $uniqueProfileFilename;
+
+            if (move_uploaded_file($_FILES['pet_profile_image']['tmp_name'], $uploadProfileFile)) {
+                $relativeProfilePath = str_replace('/public', '', $uploadProfileFile);
+                $_POST['pet_profile'] = $relativeProfilePath; // Store the profile image path
+            } else {
+                echo "Error uploading pet image.";
+                exit;
+            }
+        }
+        
+        // Handle related images
+        if (isset($_FILES['pet_image_url']) && !empty($_FILES['pet_image_url']['name'][0])) {
+            foreach ($_FILES['pet_image_url']['tmp_name'] as $key => $tmpName) {
+                if ($_FILES['pet_image_url']['error'][$key] === UPLOAD_ERR_OK) {
+                    $uploadDir = '../public/assets/images/pet_images/'; // Ensure this directory exists
+                    $uniqueFilename = uniqid('image_') . '_' . basename($_FILES['pet_image_url']['name'][$key]);
+                    $uploadFile = $uploadDir . $uniqueFilename;
+
+                    if (move_uploaded_file($tmpName, $uploadFile)) {
+                        $relativeFilePath = str_replace('/public', '', $uploadFile);
+                        $uploadedImages[] = $relativeFilePath; // Store each image path
+                    } else {
+                        echo "Error uploading file: " . $_FILES['pet_image_url']['name'][$key];
+                        exit;
+                    }
+                }
+            }
+
+            // Store the uploaded image paths in POST as a JSON array
+            $_POST['pet_image_url'] = json_encode($uploadedImages); // Convert to JSON
+        }
+
+        // Call the insert method with the modified $_POST data
+        $c->addPet($_POST);
+        redirect('server/pets');
+    }
+
+    $this->view('server/createPet');
   }
   public function createBreed()
   {
@@ -240,120 +294,70 @@ class Server extends Controller
 
     $this->view('server/createbreed');
   }
-  public function createcat()
+  
+  public function editPet($pet_id)
   {
-    $c = new Cat();
-
-    if (count($_POST) > 0) {
-        $uploadedImages = []; // Array to store the paths of uploaded images
-
-        // Handle profile image
-        if ($_FILES['cat_profile_image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = '../public/assets/images/cat_profile/';
-            $uniqueProfileFilename = uniqid('profile_') . '_' . basename($_FILES['cat_profile_image']['name']);
-            $uploadProfileFile = $uploadDir . $uniqueProfileFilename;
-
-            if (move_uploaded_file($_FILES['cat_profile_image']['tmp_name'], $uploadProfileFile)) {
-                $relativeProfilePath = str_replace('/public', '', $uploadProfileFile);
-                $_POST['cat_profile'] = $relativeProfilePath; // Store the profile image path
-            } else {
-                echo "Error uploading profile image.";
-                exit;
-            }
-        }
-        
-        // Handle related images
-        if (isset($_FILES['cat_image_url']) && !empty($_FILES['cat_image_url']['name'][0])) {
-            foreach ($_FILES['cat_image_url']['tmp_name'] as $key => $tmpName) {
-                if ($_FILES['cat_image_url']['error'][$key] === UPLOAD_ERR_OK) {
-                    $uploadDir = '../public/assets/images/cat_images/'; // Ensure this directory exists
-                    $uniqueFilename = uniqid('image_') . '_' . basename($_FILES['cat_image_url']['name'][$key]);
-                    $uploadFile = $uploadDir . $uniqueFilename;
-
-                    if (move_uploaded_file($tmpName, $uploadFile)) {
-                        $relativeFilePath = str_replace('/public', '', $uploadFile);
-                        $uploadedImages[] = $relativeFilePath; // Store each image path
-                    } else {
-                        echo "Error uploading file: " . $_FILES['cat_image_url']['name'][$key];
-                        exit;
-                    }
-                }
-            }
-
-            // Store the uploaded image paths in POST as a JSON array
-            $_POST['cat_image_url'] = json_encode($uploadedImages); // Convert to JSON
-        }
-
-        // Call the insert method with the modified $_POST data
-        $c->insert($_POST);
-        redirect('server/cats');
-    }
-
-    $this->view('server/createcat');
-  }
-  public function editcat($cat_id)
-  {
-    $x = new Cat(); // Assuming you have a Cat model for handling cat data
-    $arr['cat_id'] = $cat_id;
+    $x = new Pet(); // Assuming you have a Cat model for handling cat data
+    $arr['pet_id'] = $pet_id;
     $data = $x->first($arr);
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $postData = $_POST;
 
         // Check if a new profile image is uploaded
-        if (isset($_FILES['cat_profile_image']) && $_FILES['cat_profile_image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = '../public/assets/images/cat_profile/'; // Specify your upload directory
-            $uploadFile = $uploadDir . basename($_FILES['cat_profile_image']['name']);
+        if (isset($_FILES['pet_profile_image']) && $_FILES['pet_profile_image']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = '../public/assets/images/pet_profile/'; // Specify your upload directory
+            $uploadFile = $uploadDir . basename($_FILES['pet_profile_image']['name']);
 
             // Move the uploaded profile image to the desired directory
-            if (move_uploaded_file($_FILES['cat_profile_image']['tmp_name'], $uploadFile)) {
+            if (move_uploaded_file($_FILES['pet_profile_image']['tmp_name'], $uploadFile)) {
                 $relativeFilePath = str_replace('/public', '', $uploadFile);
-                $postData['cat_profile'] = $relativeFilePath; // Update profile image path in post data
+                $postData['pet_profile'] = $relativeFilePath; // Update profile image path in post data
             }
         }
 
         // Handle additional cat images
-        if (isset($_FILES['cat_image_url']) && count($_FILES['cat_image_url']['name']) > 0) {
-            $uploadDirImages = '../public/assets/images/cat_images/'; // Specify directory for additional cat images
+        if (isset($_FILES['pet_image_url']) && count($_FILES['pet_image_url']['name']) > 0) {
+            $uploadDirImages = '../public/assets/images/pet_images/'; // Specify directory for additional cat images
 
             $imagePaths = []; // Array to store paths of uploaded images
-            foreach ($_FILES['cat_image_url']['name'] as $key => $imageName) {
-                if ($_FILES['cat_image_url']['error'][$key] === UPLOAD_ERR_OK) {
+            foreach ($_FILES['pet_image_url']['name'] as $key => $imageName) {
+                if ($_FILES['pet_image_url']['error'][$key] === UPLOAD_ERR_OK) {
                     $uploadFile = $uploadDirImages . basename($imageName);
                     // Move the uploaded file to the desired directory
-                    if (move_uploaded_file($_FILES['cat_image_url']['tmp_name'][$key], $uploadFile)) {
+                    if (move_uploaded_file($_FILES['pet_image_url']['tmp_name'][$key], $uploadFile)) {
                         $relativeFilePath = str_replace('/public', '', $uploadFile);
                         $imagePaths[] = $relativeFilePath; // Store the relative path of the uploaded image
                     }
                 }
             }
-            $postData['cat_image_url'] = json_encode($imagePaths); // Convert paths to JSON or handle as required
+            $postData['pet_image_url'] = json_encode($imagePaths); // Convert paths to JSON or handle as required
         }
 
         // Update the cat's information
-        $x->updateCat($cat_id, $postData);
+        $x->updatePet($pet_id, $postData);
 
         // Redirect to the list of cats
-        redirect('server/cats');
+        redirect('server/pets');
     }
 
-    $this->view('server/edit_cat', [
+    $this->view('server/editPets', [
         'row' => $data
     ]);
   }
-  public function delete_cat($cat_id)
+  public function deletePet($pet_id)
   {
-    $x = new Cat();
-    $arr['cat_id'] = $cat_id;
+    $x = new Pet();
+    $arr['pet_id'] = $pet_id;
     $data = $x->first($arr);
 
     if (count($_POST) > 0) {
-        $x->deleteCat($cat_id);
+        $x->deletePet($pet_id);
 
-        redirect('server/cats');
+        redirect('server/pets');
     }
 
-    $this->view('server/delete_cat', [
+    $this->view('server/deletePet', [
         'row' => $data
     ]);
   }
@@ -367,14 +371,14 @@ class Server extends Controller
 
       $b->updateBreed($breed_id, $_POST);
 
-      redirect('server/cats');
+      redirect('server/pets');
     }
 
-    $this->view('server/editbreed', [
+    $this->view('server/editBreed', [
       'row' => $data
     ]);
   }
-  public function delete_breed($breed_id)
+  public function deleteBreed($breed_id)
   {
     $b = new Breed();
     $arr['breed_id'] = $breed_id;
@@ -387,7 +391,7 @@ class Server extends Controller
         }
         
         // Load view to confirm deletion
-        $this->view('server/delete_breed', [
+        $this->view('server/deleteBreed', [
             'row' => $data
         ]);
     } else {
