@@ -40,3 +40,9 @@
   font-weight: 900;
 }
 
+@media screen and (max-width: 1024px) {
+  .yourClass {
+    display: none;
+  }
+}
+
