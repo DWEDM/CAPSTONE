@@ -215,10 +215,15 @@ if (!isset($_SESSION['username'])) {
         imagePreview.src = '../assets/images/default_profile/default.png';
     }
   }
-  function removeProfileImage(previewElementId) {
-    const imagePreview = document.getElementById(previewElementId);
-    imagePreview.src = '../assets/images/default_profile/default.png'; // Set to default image
+  function removeProfileImage(previewId, removeInputId) {
+    const preview = document.getElementById(previewId);
+    const removeInput = document.getElementById(removeInputId);
+
+    // Change the image to default preview and mark the profile for removal
+    preview.src = '../assets/images/default_profile/default.png';
+    removeInput.value = 'remove'; // Mark the profile for removal
   }
+
 
   function togglePasswordCreate() {
     const passwordInput = document.getElementById('password');

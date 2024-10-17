@@ -59,21 +59,28 @@ if (!isset($_SESSION['username'])) {
                         <td><?= htmlspecialchars($article->updated_at) ?></td>
                         <td>
                             <?php
-                            $categoryName = '';
-                            foreach ($categories as $category) {
-                                if ($category->category_id == $article->category_id) {
-                                    $categoryName = htmlspecialchars($category->category_name);
-                                    break;
+                            $categoryName = 'Unknown Category'; // Default value if no category is found
+
+                            // Check if $categories is a valid array or object before iterating
+                            if (is_array($categories) || is_object($categories)) {
+                                foreach ($categories as $category) {
+                                    if ($category->category_id == $article->category_id) {
+                                        $categoryName = htmlspecialchars($category->category_name);
+                                        break;
+                                    }
                                 }
                             }
-                            echo $categoryName ? $categoryName : 'Unknown Category'; ?>
+
+                            // Echo the category name or "Unknown Category"
+                            echo $categoryName;
+                            ?>
                         </td>
                         <td>
                             <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#editArticleModal<?= $article->article_id ?>">
-                                <i class="fas fa-edit"></i> <!-- Edit Icon -->
+                                <i class="fas fa-edit"></i>
                             </button>
                             <button class="btn btn-danger btn-sm" onclick="confirmDeleteArticle('<?= $article->article_id ?>')" title="Delete Article">
-                                <i class="fas fa-trash-alt"></i> <!-- Delete Icon -->
+                                <i class="fas fa-trash-alt"></i>
                             </button>
                         </td>
                     </tr>

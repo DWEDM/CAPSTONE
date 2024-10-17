@@ -140,4 +140,15 @@ class Model extends Database
 
       return false; // Return false if no user is found
   }
+  public function isInUse($id, $relatedTable, $foreignKey)
+  {
+      $query = "SELECT COUNT(*) as count FROM $relatedTable WHERE $foreignKey = :id";
+      $result = $this->query($query, ['id' => $id]);
+  
+      if ($result && $result[0]->count > 0) {
+          return true; // Row is in use
+      }
+      
+      return false; // Row is not in use
+  }
 }

@@ -289,10 +289,23 @@ class Server extends Controller
       
       $b->addBreed($_POST);
 
-      redirect('server/cats');
+      redirect('server/pets');
     }
 
     $this->view('server/createbreed');
+  }
+  public function createSpecies()
+  {
+    $b = new Species();
+
+    if (count($_POST) > 0) {
+      
+      $b->addSpecies($_POST);
+
+      redirect('server/pets');
+    }
+
+    $this->view('server/createSpecies');
   }
   
   public function editPet($pet_id)
@@ -337,12 +350,46 @@ class Server extends Controller
         // Update the cat's information
         $x->updatePet($pet_id, $postData);
 
-        // Redirect to the list of cats
+        // Redirect to the list of pets
         redirect('server/pets');
     }
 
     $this->view('server/editPets', [
         'row' => $data
+    ]);
+  }
+  public function editBreed($breed_id)
+  {
+    $b = new Breed();
+    $arr['breed_id'] = $breed_id;
+    $data = $b->findBreed($arr);
+
+    if (count($_POST) > 0) {
+
+      $b->updateBreed($breed_id, $_POST);
+
+      redirect('server/pets');
+    }
+
+    $this->view('server/editBreed', [
+      'row' => $data
+    ]);
+  }
+  public function editSpecies($species_id)
+  {
+    $s = new Species();
+    $arr['species_id'] = $species_id;
+    $data = $s->findSpecies($arr);
+
+    if (count($_POST) > 0) {
+
+      $s->updateSpecies($species_id, $_POST);
+
+      redirect('server/pets');
+    }
+
+    $this->view('server/editSpecies', [
+      'row' => $data
     ]);
   }
   public function deletePet($pet_id)
@@ -361,23 +408,6 @@ class Server extends Controller
         'row' => $data
     ]);
   }
-  public function editbreed($breed_id)
-  {
-    $b = new Breed();
-    $arr['breed_id'] = $breed_id;
-    $data = $b->findBreed($arr);
-
-    if (count($_POST) > 0) {
-
-      $b->updateBreed($breed_id, $_POST);
-
-      redirect('server/pets');
-    }
-
-    $this->view('server/editBreed', [
-      'row' => $data
-    ]);
-  }
   public function deleteBreed($breed_id)
   {
     $b = new Breed();
@@ -387,7 +417,7 @@ class Server extends Controller
     if ($data) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') { // Ensure it's a POST request
             $b->deleteBreed($breed_id); // Attempt to delete
-            redirect('server/cats'); // Redirect after deletion
+            redirect('server/pets'); // Redirect after deletion
         }
         
         // Load view to confirm deletion
@@ -398,7 +428,25 @@ class Server extends Controller
         echo "Breed not found.";
     }
   }
+  public function deleteSpecies($species_id)
+  {
+    $s = new Species();
+    $arr['species_id'] = $species_id;
+    $data = $s->first($arr);
 
+    if ($data) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $s->deleteSpecies($species_id);
+            redirect('server/pets');
+        }
+        
+        $this->view('server/deleteSpecies', [
+            'row' => $data
+        ]);
+    } else {
+
+    }
+  }
   public function articles()
   {
     $posts = new Article();
@@ -514,7 +562,7 @@ class Server extends Controller
       redirect('server/articles');
     }
 
-    $this->view('server/editBreed', [
+    $this->view('server/editCategory', [
       'row' => $data
     ]);
   }
